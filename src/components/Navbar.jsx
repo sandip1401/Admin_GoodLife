@@ -1,11 +1,22 @@
 import React, { useContext } from 'react'
 import { AdminContext } from '../context/AdminContext'
+import { DoctorContext } from '../context/DoctorContext'
 
 const Navbar = () => {
     const {aToken,setAToken}=useContext(AdminContext)
+    const { dToken, setDToken } = useContext(DoctorContext)
     const logout=()=>{
-        aToken && setAToken('')
-        aToken && localStorage.removeItem('aToken')
+        // Admin logout
+    if (aToken) {
+        setAToken('')
+        localStorage.removeItem('aToken')
+    }
+
+    // Doctor logout
+    if (dToken) {
+        setDToken('')
+        localStorage.removeItem('dToken')
+    }
     }
 
   return (

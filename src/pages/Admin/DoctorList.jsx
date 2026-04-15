@@ -1,8 +1,12 @@
 import React, { useContext, useEffect } from 'react'
 import { AdminContext } from '../../context/AdminContext'
+import { useNavigate } from "react-router-dom";
 
 const DoctorList = () => {
   const {doctors,aToken,getAllDoctors,changeAvailability}=useContext(AdminContext)
+
+  const navigate = useNavigate();
+
   useEffect(()=>{
     if(aToken){
       getAllDoctors()
@@ -15,8 +19,11 @@ const DoctorList = () => {
         {
           doctors.map((item,index)=>{
             return(
-            <div className=' border border-indigo-200 rounded-xl max-w-56 cursor-pointer overflow-hidden' key={index}>
-              <img className=' hover:bg-blue-500 transition-all duration-300' src={item.image} alt="" />
+<div
+  onClick={() => navigate(`/admin/doctor/${item._id}`)}
+  className='border border-indigo-200 rounded-xl max-w-56 cursor-pointer overflow-hidden'
+  key={index}
+>              <img className=' hover:bg-blue-500 transition-all duration-300' src={item.image} alt="" />
               <p className='pl-3'>{item.name}</p>
               <p className='pl-3'>{item.speciality}</p>
               <div className='flex gap-1 pl-3 mb-1'>

@@ -4,6 +4,7 @@ import { FaUserDoctor } from "react-icons/fa6";
 import { IoTicketOutline } from "react-icons/io5";
 import { IoIosMan } from "react-icons/io";
 import { useNavigate } from "react-router-dom";
+import { FaHospital } from "react-icons/fa";
 
 const Dashboard = () => {
   const { aToken, getDashData, dashData, getAllPatients,patients } = useContext(AdminContext);
@@ -69,7 +70,22 @@ const Dashboard = () => {
             </div>
           </div>
 
+          {/* Clinics */}
+<div
+  onClick={() => navigate("/clinic-list")}
+  className="flex items-center gap-3 bg-white p-4 min-w-52 rounded border cursor-pointer hover:scale-105 active:scale-100 transition"
+>
+  <FaHospital className="text-4xl text-red-400" />
+  <div>
+    <p className="text-lg font-semibold">{dashData.clinics}</p>
+    <p className="text-gray-500">Clinics</p>
+  </div>
+</div>
+
         </div>
+
+
+        
 
         {/* ===== PATIENT LIST (INLINE) ===== */}
         {showPatients && (
@@ -99,7 +115,7 @@ const Dashboard = () => {
       {patients.map((patient, index) => (
         <div
           key={patient._id}
-          className="grid grid-cols-4 px-6 py-3 border-b text-gray-700 hover:bg-gray-50"
+          className="grid grid-cols-4 px-6 py-3 border-b text-gray-700 hover:bg-gray-100"
         >
           <p>{index + 1}</p>
           <p>{patient.name}</p>
