@@ -17,10 +17,21 @@ import DoctorDashboard from "./pages/Doctor/DoctorDashboard";
 import { DoctorContext } from "./context/DoctorContext";
 import DoctorAppointments from "./pages/Doctor/DoctorAppointments";
 import DoctorProfile from "./pages/Doctor/DoctorProfile";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 const App = () => {
   const { aToken } = useContext(AdminContext);
   const { dToken } = useContext(DoctorContext);
+  const navigate = useNavigate();
+
+useEffect(() => {
+  if (aToken) {
+    navigate('/admin-dashboard')
+  } else if (dToken) {
+    navigate('/doctor-dashboard')
+  }
+}, [aToken, dToken]);
   return aToken || dToken ? (
     <div className="bg-blue-50 min-h-screen">
       <ToastContainer />
@@ -28,7 +39,7 @@ const App = () => {
       <div className="flex">
         <Sidebar />
         <Routes>
-          <Route path="/" element={<></>} />
+          <Route path="/" element={aToken ? <Dashboard /> : <DoctorDashboard />} />
           <Route path="/admin-dashboard" element={<Dashboard />} />
           <Route path="/all-appointments" element={<Appoinments />} />
           <Route path="/add-doctor" element={<AddDoctor />} />

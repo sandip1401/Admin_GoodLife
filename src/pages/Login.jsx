@@ -3,6 +3,7 @@ import AdminContextProvider, { AdminContext } from '../context/AdminContext'
 import axios from 'axios'
 import { toast } from 'react-toastify'
 import { DoctorContext } from '../context/DoctorContext'
+import { useNavigate } from 'react-router-dom'
 
 const Login = () => {
     const [state, setState] = useState('Admin')
@@ -11,37 +12,48 @@ const Login = () => {
 
     const {setAToken,backendUrl}=useContext(AdminContext)
     const {setDToken}=useContext(DoctorContext)
+    const navigate = useNavigate();
+    
+const onSubmitHandler = async (event) => {
+    event.preventDefault()
 
-    const onSubmitHandler=async(event)=>{
-        event.preventDefault()
-        try{
-            if(state==='Admin'){
-                const {data}=await axios.post(backendUrl+'/api/admin/login',{email,password})
-                if(data.success){
-                    console.log("valid token")
-                    setAToken(data.token);
-                    localStorage.setItem('aToken',data.token)
-                }
-                else{
-                    toast.error(data.message)
-                }
+    try {
+        if (state === 'Admin') {
+            const { data } = await axios.post(
+                backendUrl + '/api/admin/login',
+                { email, password }
+            )
+
+            if (data.success) {
+                setAToken(data.token)
+                localStorage.setItem('aToken', data.token)
+
+                // ✅ REDIRECT ADMIN
+                navigate('/admin-dashboard')
+            } else {
+                toast.error(data.message)
             }
-            else{
-                const {data}=await axios.post(backendUrl+'/api/doctor/login',{email,password})
-                if(data.success){
-                    setDToken(data.token);
-                    localStorage.setItem('dToken',data.token)
-                    console.log(data.token)
-                }
-                else{
-                    toast.error(data.message)
-                }
+
+        } else {
+            const { data } = await axios.post(
+                backendUrl + '/api/doctor/login',
+                { email, password }
+            )
+
+            if (data.success) {
+                setDToken(data.token)
+                localStorage.setItem('dToken', data.token)
+
+                // ✅ REDIRECT DOCTOR
+                navigate('/doctor-dashboard')
+            } else {
+                toast.error(data.message)
             }
         }
-        catch(err){
-
-        }
+    } catch (err) {
+        toast.error(err.message)
     }
+}
 
   return (
     <form onSubmit={onSubmitHandler} className='min-h-[80vh] flex items-center'>
