@@ -3,15 +3,14 @@ import { assets } from "../../assets/assets_admin/assets";
 import { AdminContext } from "../../context/AdminContext";
 import { toast } from "react-toastify";
 import axios from "axios";
-import { useParams,useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 
 const AddDoctor = () => {
-
   const navigate = useNavigate();
 
   const { id } = useParams();
-const isEdit = !!id;
+  const isEdit = !!id;
 
   const [docImg, setDocImg] = useState(false);
   const [name, setName] = useState("");
@@ -28,7 +27,7 @@ const isEdit = !!id;
   const [adddress1, setAddress1] = useState("");
   const [adddress2, setAddress2] = useState("");
   const [achievement, setaAchievement] = useState("");
-const [clinicImg, setClinicImg] = useState(false);
+  const [clinicImg, setClinicImg] = useState(false);
 
   // ✅ Weekly Availability State
   const [weeklyAvailability, setWeeklyAvailability] = useState([
@@ -42,7 +41,7 @@ const [clinicImg, setClinicImg] = useState(false);
     clinicSuggestions,
     showClinicList,
     setShowClinicList,
-    doctors
+    doctors,
   } = useContext(AdminContext);
 
   const getCurrentLocationLink = () => {
@@ -99,124 +98,117 @@ const [clinicImg, setClinicImg] = useState(false);
 
       formData.append("managerContacts", JSON.stringify(managerContacts));
 
-if (isEdit) {
+      if (isEdit) {
+        const formData = new FormData();
 
-  const formData = new FormData();
+        formData.append("doctorId", id);
+        formData.append("email", email);
+        formData.append("city", city);
+        formData.append("fees", fees);
+        formData.append("experience", experience);
+        formData.append("about", about);
+        formData.append("achievement", achievement);
+        formData.append("address1", adddress1);
+        formData.append("managerContacts", JSON.stringify(managerContacts));
 
-  formData.append("doctorId", id);
-  formData.append("email", email);
-  formData.append("city", city);
-  formData.append("fees", fees);
-  formData.append("experience", experience);
-  formData.append("about", about);
-  formData.append("achievement", achievement);
-  formData.append("address1", adddress1);
-  formData.append("managerContacts", JSON.stringify(managerContacts));
+        if (docImg instanceof File) {
+          formData.append("image", docImg);
+        }
 
-  if (docImg instanceof File) {
-    formData.append("image", docImg);
-  }
+        const { data } = await axios.post(
+          backendUrl + "/api/admin/update-doctor",
+          formData,
+          { headers: { aToken } },
+        );
 
-  const { data } = await axios.post(
-    backendUrl + "/api/admin/update-doctor",
-    formData,
-    { headers: { aToken } }
-  );
+        if (data.success) {
+          toast.success("Doctor Updated Successfully");
+          navigate("/admin/doctor-list");
+        } else {
+          toast.error(data.message);
+        }
 
-  if (data.success) {
-    toast.success("Doctor Updated Successfully");
-    navigate("/admin/doctor-list");
-  } else {
-    toast.error(data.message);
-  }
+        return;
+      } else {
+        const { data } = await axios.post(
+          backendUrl + "/api/admin/add-doctor",
+          formData,
+          { headers: { aToken } },
+        );
 
-  return;
-} else {
-  const { data } = await axios.post(
-    backendUrl + "/api/admin/add-doctor",
-    formData,
-    { headers: { aToken } }
-  );
-
-  if (data.success) {
-    toast.success("Doctor Added Successfully");
-    navigate(`/admin/doctor/${data.doctor._id}`);
-  } else {
-    toast.error(data.message);
-  }
-}
-
-
+        if (data.success) {
+          toast.success("Doctor Added Successfully");
+          navigate(`/admin/doctor/${data.doctor._id}`);
+        } else {
+          toast.error(data.message);
+        }
+      }
     } catch (err) {
       toast.error("Something went wrong");
     }
   };
 
+  useEffect(() => {
+    if (isEdit && doctors.length > 0) {
+      const doctor = doctors.find((doc) => doc._id === id);
 
-useEffect(() => {
-  if (isEdit && doctors.length > 0) {
-    const doctor = doctors.find((doc) => doc._id === id);
+      if (doctor) {
+        setDocImg(doctor.image || false);
+        setName(doctor.name || "");
+        setEmail(doctor.email || "");
+        setPassword(""); // usually we don't show old password
+        setSpeciality(doctor.speciality || "");
+        setDegree(doctor.degree || "");
+        setExperience(doctor.experience || "");
+        setAbout(doctor.about || "");
+        setFees(doctor.fees || "");
+        setCity(doctor.city || "");
+        setAddress1(doctor.address1 || "");
+        setAddress2(doctor.address2 || "");
+        setEducation(doctor.education || "");
+        setManagerContacts(doctor.managerContacts || "");
+        setaAchievement(doctor.achievement || "");
 
-    if (doctor) {
-      setDocImg(doctor.image || false);
-      setName(doctor.name || "");
-      setEmail(doctor.email || "");
-      setPassword(""); // usually we don't show old password
-      setSpeciality(doctor.speciality || "");
-      setDegree(doctor.degree || "");
-      setExperience(doctor.experience || "");
-      setAbout(doctor.about || "");
-      setFees(doctor.fees || "");
-      setCity(doctor.city || "");
-      setAddress1(doctor.address1 || "");
-      setAddress2(doctor.address2 || "");
-      setEducation(doctor.education || "");
-      setManagerContacts(doctor.managerContacts || "")
-      setaAchievement(doctor.achievement || "");
-
-      setWeeklyAvailability(
-        doctor.weeklyAvailability?.length
-          ? doctor.weeklyAvailability
-          : [{ day: "", startTime: "", endTime: "" }]
-      );
+        setWeeklyAvailability(
+          doctor.weeklyAvailability?.length
+            ? doctor.weeklyAvailability
+            : [{ day: "", startTime: "", endTime: "" }],
+        );
+      }
     }
-  }
-}, [id, doctors]);
+  }, [id, doctors]);
 
   return (
-    <form onSubmit={onSubmitHandler} className="m-5 w-full">
+    <form onSubmit={onSubmitHandler} className="m-3 sm:m-5 w-full">
+      {" "}
       <p className="mb-3 text-lg font-medium">Add Doctor</p>
-
-      <div className="bg-white px-8 py-8 border rounded-md w-full max-w-4xl">
+      <div className="bg-white px-4 sm:px-6 md:px-8 py-6 border rounded-md w-full max-w-4xl">
         {/* Image Upload */}
-{/* Image Upload */}
-<div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8 text-gray-500">
-  
-  {/* Doctor Image */}
-  <div className="flex items-center gap-4">
-    <label htmlFor="doc-img">
-      <img
-        className="w-16 h-16 bg-gray-100 rounded-full cursor-pointer object-cover"
-src={
-  docImg
-    ? docImg instanceof File
-      ? URL.createObjectURL(docImg)
-      : docImg
-    : assets.upload_area
-}        alt=""
-      />
-    </label>
-    <input
-      onChange={(e) => setDocImg(e.target.files[0])}
-      type="file"
-      id="doc-img"
-      hidden
-    />
-    <p>Doctor picture</p>
-  </div>
-
-
-</div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8 text-gray-500">
+          {/* Doctor Image */}
+          <div className="flex items-center gap-4">
+            <label htmlFor="doc-img">
+              <img
+                className="w-16 h-16 bg-gray-100 rounded-full cursor-pointer object-cover"
+                src={
+                  docImg
+                    ? docImg instanceof File
+                      ? URL.createObjectURL(docImg)
+                      : docImg
+                    : assets.upload_area
+                }
+                alt=""
+              />
+            </label>
+            <input
+              onChange={(e) => setDocImg(e.target.files[0])}
+              type="file"
+              id="doc-img"
+              hidden
+            />
+            <p>Doctor picture</p>
+          </div>
+        </div>
 
         {/* FORM GRID */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 text-gray-600">
@@ -516,7 +508,8 @@ src={
               </div>
 
               {/* Start & End Time */}
-              <div className="flex gap-4 mb-3">
+              <div className="flex flex-col sm:flex-row gap-4 mb-3">
+                {" "}
                 <div>
                   <p>Start Time</p>
                   <input
@@ -530,7 +523,6 @@ src={
                     className="border p-2 rounded"
                   />
                 </div>
-
                 <div>
                   <p>End Time</p>
                   <input

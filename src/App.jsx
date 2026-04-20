@@ -26,10 +26,12 @@ const App = () => {
   const navigate = useNavigate();
 
 useEffect(() => {
-  if (aToken) {
-    navigate('/admin-dashboard')
-  } else if (dToken) {
-    navigate('/doctor-dashboard')
+  if (window.location.pathname === "/") {
+    if (aToken) {
+      navigate("/admin-dashboard");
+    } else if (dToken) {
+      navigate("/doctor-dashboard");
+    }
   }
 }, [aToken, dToken]);
   return aToken || dToken ? (
@@ -38,6 +40,7 @@ useEffect(() => {
       <Navbar />
       <div className="flex">
         <Sidebar />
+        
         <Routes>
           <Route path="/" element={aToken ? <Dashboard /> : <DoctorDashboard />} />
           <Route path="/admin-dashboard" element={<Dashboard />} />

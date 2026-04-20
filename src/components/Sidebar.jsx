@@ -11,17 +11,7 @@ const Sidebar = () => {
 
   return (
     <>
-      {/* Mobile Menu Button */}
-      {aToken && (
-        <div className="md:hidden w-full px-4 py-3 border-b bg-white sticky top-0 z-40">
-          <button
-            onClick={() => setOpenMenu(true)}
-            className="w-full flex items-center justify-center gap-2 bg-primary text-white py-3 rounded-xl text-base font-semibold shadow"
-          >
-            Menu
-          </button>
-        </div>
-      )}
+
 
       {/* Desktop Sidebar (UNCHANGED) */}
       <div className="hidden md:block min-h-screen bg-white border-r">
@@ -129,85 +119,7 @@ const Sidebar = () => {
         ):null}
       </div>
 
-      {/* Mobile Overlay Menu */}
-      {openMenu && (
-        <div className="fixed inset-0 z-50 md:hidden">
-          {/* Background Blur */}
-          <div
-            className="absolute inset-0 bg-black/30 backdrop-blur-sm"
-            onClick={() => setOpenMenu(false)}
-          ></div>
 
-          {/* Menu Panel */}
-          <div className="absolute top-24 left-4 right-4 bg-white rounded-xl shadow-xl p-4 transition-all duration-300">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="font-semibold text-lg">Menu</h2>
-              <button
-                onClick={() => setOpenMenu(false)}
-                className="text-gray-500 text-lg"
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="flex flex-col gap-2 text-sm">
-              <NavLink
-                to="/admin-dashboard"
-                onClick={() => setOpenMenu(false)}
-                className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-gray-100"
-              >
-                <img src={assets.home_icon} alt="" />
-                Dashboard
-              </NavLink>
-
-              <NavLink
-                to="/all-appointments"
-                onClick={() => setOpenMenu(false)}
-                className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-gray-100"
-              >
-                <img src={assets.appointment_icon} alt="" />
-                Appointments
-              </NavLink>
-
-              <NavLink
-                to="/add-doctor"
-                onClick={() => setOpenMenu(false)}
-                className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-gray-100"
-              >
-                <img src={assets.add_icon} alt="" />
-                Add Doctor
-              </NavLink>
-
-              <NavLink
-                to="/add-clinic"
-                onClick={() => setOpenMenu(false)}
-                className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-gray-100"
-              >
-                <img src={assets.add_icon} alt="" />
-                Add Clinic
-              </NavLink>
-
-              <NavLink
-                to="/clinic-list"
-                onClick={() => setOpenMenu(false)}
-                className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-gray-100"
-              >
-                <img src={assets.people_icon} alt="" />
-                Clinics List
-              </NavLink>
-
-              <NavLink
-                to="/admin/doctor-list"
-                onClick={() => setOpenMenu(false)}
-                className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-gray-100"
-              >
-                <img src={assets.people_icon} alt="" />
-                Doctors List
-              </NavLink>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 };

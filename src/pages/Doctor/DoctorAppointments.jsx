@@ -8,6 +8,7 @@ import { FiFilter } from "react-icons/fi";
 const DoctorAppointments = () => {
   const [showDateFilter, setShowDateFilter] = useState(false);
   const [selectedDate, setSelectedDate] = useState("");
+  const [filterType, setFilterType] = useState("all");
 
   const {
     dToken,
@@ -19,7 +20,7 @@ const DoctorAppointments = () => {
 
   const { currency } = useContext(AppContext);
 
-  // ✅ Format date
+  // Format date (UNCHANGED)
   const formatSlotDate = (slotDate) => {
     if (!slotDate) return "";
     const [day, month, year] = slotDate.split("_");
@@ -32,7 +33,7 @@ const DoctorAppointments = () => {
     });
   };
 
-  // ✅ Convert time to sortable value
+  // Convert time (UNCHANGED)
   const convertTime = (time) => {
     if (!time) return 0;
     const [hourMin, modifier] = time.split(" ");
@@ -48,14 +49,47 @@ const DoctorAppointments = () => {
     return parseInt(hours) * 60 + parseInt(minutes);
   };
 
-  // ✅ Filter + Sort
-  const filteredAppointments = appointments
-    .filter((item) =>
-      selectedDate ? item.slotDate === selectedDate : true
-    )
-    .sort((a, b) => convertTime(a.slotTime) - convertTime(b.slotTime));
+  // Convert date (FIXED)
+  const convertDate = (slotDate) => {
+    const [day, month, year] = slotDate.split("_");
+    const d = new Date(year, month - 1, day);
+    d.setHours(0, 0, 0, 0);
+    return d;
+  };
 
-  // ✅ Unique dates
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // ✅ FILTER + SORT (FIXED ONLY)
+  const filteredAppointments = appointments
+    .filter((item) => {
+      const itemDate = convertDate(item.slotDate);
+
+      // Date dropdown priority
+      if (selectedDate) return item.slotDate === selectedDate;
+
+      if (filterType === "today")
+        return itemDate.getTime() === today.getTime();
+
+      if (filterType === "upcoming")
+        return itemDate.getTime() > today.getTime();
+
+      if (filterType === "past")
+        return itemDate.getTime() < today.getTime();
+
+      return true;
+    })
+    .sort((a, b) => {
+      const dateA = convertDate(a.slotDate);
+      const dateB = convertDate(b.slotDate);
+
+      if (dateA.getTime() !== dateB.getTime()) {
+        return dateB - dateA;
+      }
+
+      return convertTime(a.slotTime) - convertTime(b.slotTime);
+    });
+
   const dateList = [...new Set(appointments.map((a) => a.slotDate))];
 
   useEffect(() => {
@@ -68,9 +102,57 @@ const DoctorAppointments = () => {
     <div className="w-full m-5">
       <p className="mb-3 text-lg font-medium">My Appointments</p>
 
+     <div className="flex gap-3 mb-3 flex-wrap">
+
+  <button
+    onClick={() => { setSelectedDate(""); setFilterType("all"); }}
+    className={`px-4 py-1 rounded border ${
+      filterType === "all" && !selectedDate
+        ? "bg-blue-500 text-white"
+        : "bg-white text-gray-600"
+    }`}
+  >
+    All
+  </button>
+
+  <button
+    onClick={() => { setSelectedDate(""); setFilterType("today"); }}
+    className={`px-4 py-1 rounded border ${
+      filterType === "today"
+        ? "bg-blue-500 text-white"
+        : "bg-white text-gray-600"
+    }`}
+  >
+    Today
+  </button>
+
+  <button
+    onClick={() => { setSelectedDate(""); setFilterType("upcoming"); }}
+    className={`px-4 py-1 rounded border ${
+      filterType === "upcoming"
+        ? "bg-blue-500 text-white"
+        : "bg-white text-gray-600"
+    }`}
+  >
+    Upcoming
+  </button>
+
+  <button
+    onClick={() => { setSelectedDate(""); setFilterType("past"); }}
+    className={`px-4 py-1 rounded border ${
+      filterType === "past"
+        ? "bg-blue-500 text-white"
+        : "bg-white text-gray-600"
+    }`}
+  >
+    Past
+  </button>
+
+</div>
+
       <div className="bg-white border rounded text-sm max-h-[80vh] min-h-[80vh] overflow-y-scroll">
 
-        {/* ===== MOBILE FILTER ===== */}
+        {/* MOBILE FILTER (UNCHANGED UI, FIXED LOGIC) */}
         <div className="sm:hidden p-4 border-b flex justify-between items-center relative">
           <p className="font-medium">Filter</p>
           <FiFilter
@@ -84,6 +166,7 @@ const DoctorAppointments = () => {
                 value={selectedDate}
                 onChange={(e) => {
                   setSelectedDate(e.target.value);
+                  setFilterType("all"); // important
                   setShowDateFilter(false);
                 }}
                 className="border px-2 py-1"
@@ -99,7 +182,7 @@ const DoctorAppointments = () => {
           )}
         </div>
 
-        {/* ===== DESKTOP HEADER ===== */}
+        {/* DESKTOP HEADER (UNCHANGED) */}
         <div className="hidden sm:grid sm:grid-cols-[0.5fr_2fr_1.3fr_2fr_0.8fr_0.8fr] items-center py-4 px-6 border-b bg-white sticky top-0 z-10">
           <p>#</p>
           <p>Patient</p>
@@ -118,6 +201,7 @@ const DoctorAppointments = () => {
                   value={selectedDate}
                   onChange={(e) => {
                     setSelectedDate(e.target.value);
+                    setFilterType("all"); // important
                     setShowDateFilter(false);
                   }}
                   className="border px-2 py-1"
@@ -137,18 +221,18 @@ const DoctorAppointments = () => {
           <p className="text-center">Actions</p>
         </div>
 
-        {/* Empty */}
+        {/* EMPTY */}
         {filteredAppointments.length === 0 && (
           <p className="text-center py-10 text-gray-500">
             No appointments found
           </p>
         )}
 
-        {/* List */}
+        {/* LIST */}
         {filteredAppointments.map((item, index) => (
           <div key={item._id}>
 
-            {/* DESKTOP */}
+            {/* DESKTOP (UNCHANGED) */}
             <div className="hidden sm:grid sm:grid-cols-[0.5fr_2fr_1.3fr_2fr_0.8fr_0.8fr] items-center py-4 px-6 border-b hover:bg-gray-100 text-gray-600">
               <p>{index + 1}</p>
 
@@ -181,7 +265,7 @@ const DoctorAppointments = () => {
               )}
             </div>
 
-            {/* MOBILE */}
+            {/* MOBILE (RESTORED ORIGINAL STYLE) */}
             <div className="sm:hidden border-b px-4 py-4 flex justify-between items-center">
               <div>
                 <p className="font-medium">{item.userData.name}</p>

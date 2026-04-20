@@ -4,7 +4,7 @@ import { FaUserDoctor } from "react-icons/fa6";
 import { IoTicketOutline } from "react-icons/io5";
 import { IoIosMan } from "react-icons/io";
 import { useNavigate } from "react-router-dom";
-import { FaHospital } from "react-icons/fa";
+import { FaUserMd, FaHospital } from "react-icons/fa";
 
 const Dashboard = () => {
   const { aToken, getDashData, dashData, getAllPatients,patients } = useContext(AdminContext);
@@ -33,6 +33,33 @@ const Dashboard = () => {
 
         {/* ===== TOP CARDS ===== */}
         <div className="flex flex-wrap gap-4">
+
+          {/* ✅ MOBILE ONLY ADD BOXES */}
+<div className="md:hidden flex flex-col gap-4 mt-4">
+
+  {/* Add Clinic */}
+  <div
+    onClick={() => navigate("/add-clinic")}
+    className="flex items-center gap-4 bg-white border rounded pr-11 cursor p-5 cursor-pointer"
+  >
+    <div className="bg-blue-100 p-3 rounded-full">
+      <FaHospital className="text-blue-500 text-xl" />
+    </div>
+    <p className="text-gray-700 font-medium text-base">Add Clinic</p>
+  </div>
+
+    {/* Add Doctor */}
+  <div
+    onClick={() => navigate("/add-doctor")}
+    className="flex items-center gap-4 bg-white border rounded p-5 pr-11 cursor-pointer"
+  >
+    <div className="bg-blue-100 p-3 rounded-full">
+      <FaUserMd className="text-blue-500 text-xl" />
+    </div>
+    <p className="text-gray-700 font-medium text-base">Add Doctor</p>
+  </div>
+
+</div>
 
           {/* Doctors */}
           <div
