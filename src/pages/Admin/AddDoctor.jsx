@@ -275,7 +275,7 @@ const AddDoctor = () => {
               <option value="17 Year">17 Year</option>
               <option value="18 Year">18 Year</option>
               <option value="19 Year">19 Year</option>
-              <option value="20 Year">20 Year</option>
+              <option value="20 Year+">20 Year+</option>
             </select>
           </div>
 
@@ -333,6 +333,9 @@ const AddDoctor = () => {
               <option value="Physiotherapist">
                 Physiotherapist ( ফিজিওথেরাপিস্ট )
               </option>
+              <option value="ENT Specialist">
+                ENT Specialist ( নাক, কান, গলা বিশেষজ্ঞ )
+              </option>
               <option value="Diabetes & Thyroid Specialist">
                 Diabetes & Thyroid Specialist ( সুগার ও থাইরয়েড রোগ বিশেষজ্ঞ )
               </option>
@@ -341,6 +344,9 @@ const AddDoctor = () => {
               </option>
               <option value="Ophthalmologist">
                 Ophthalmologist ( চক্ষু রোগ বিশেষজ্ঞ )
+              </option>
+              <option value="Urologist">
+                Urologist (ইউরোলজিস্ট)
               </option>
             </select>
           </div>
