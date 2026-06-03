@@ -29,6 +29,35 @@ const AddDoctor = () => {
   const [achievement, setaAchievement] = useState("");
   const [clinicImg, setClinicImg] = useState(false);
 
+  const normalizeManagerContacts = (contacts) => {
+    if (Array.isArray(contacts)) {
+      return contacts.map(String).filter(Boolean);
+    }
+
+    if (!contacts) {
+      return [""];
+    }
+
+    if (typeof contacts === "string") {
+      try {
+        const parsed = JSON.parse(contacts);
+        if (Array.isArray(parsed)) {
+          return parsed.map(String).filter(Boolean);
+        }
+      } catch (err) {
+        // fall through
+      }
+
+      return contacts
+        .replace(/^[\[\]\s"]+|[\[\]\s"]+$/g, "")
+        .split(",")
+        .map((item) => item.trim().replace(/^"|"$/g, ""))
+        .filter(Boolean);
+    }
+
+    return [String(contacts)];
+  };
+
   // ✅ Weekly Availability State
   const [weeklyAvailability, setWeeklyAvailability] = useState([
     { day: "", startTime: "", endTime: "" },
@@ -166,7 +195,7 @@ const AddDoctor = () => {
         setAddress1(doctor.address1 || "");
         setAddress2(doctor.address2 || "");
         setEducation(doctor.education || "");
-        setManagerContacts(doctor.managerContacts || "");
+        setManagerContacts(normalizeManagerContacts(doctor.managerContacts));
         setaAchievement(doctor.achievement || "");
 
         setWeeklyAvailability(
