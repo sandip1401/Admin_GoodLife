@@ -5,16 +5,23 @@ import { IoTicketOutline } from "react-icons/io5";
 import { IoIosMan } from "react-icons/io";
 import { useNavigate } from "react-router-dom";
 import { FaUserMd, FaHospital } from "react-icons/fa";
+import { AiOutlineLoading3Quarters } from "react-icons/ai";
 
 const Dashboard = () => {
-  const { aToken, getDashData, dashData, getAllPatients,patients } = useContext(AdminContext);
+  const { aToken, getDashData, dashData, getAllPatients, patients } = useContext(AdminContext);
   const navigate = useNavigate();
 
   const [showPatients, setShowPatients] = useState(false);
+  const [dashboardLoading, setDashboardLoading] = useState(false);
 
   useEffect(() => {
     if (aToken) {
-      getDashData();
+      const fetchDash = async () => {
+        setDashboardLoading(true);
+        await getDashData();
+        setDashboardLoading(false);
+      };
+      fetchDash();
     }
   }, [aToken]);
 
@@ -26,6 +33,15 @@ const Dashboard = () => {
     setShowPatients(!showPatients);
   };
 
+
+  if (dashboardLoading) {
+    return (
+      <div className="m-5 w-full max-w-5xl h-[calc(100vh-80px)] flex flex-col items-center justify-center">
+        <AiOutlineLoading3Quarters className="text-5xl animate-spin text-blue-600" />
+        <p className="mt-4 text-blue-600 text-lg">Loading dashboard...</p>
+      </div>
+    );
+  }
 
   return (
     dashData && (

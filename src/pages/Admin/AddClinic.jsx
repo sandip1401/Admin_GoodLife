@@ -1,10 +1,16 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { AdminContext } from "../../context/AdminContext";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { AiOutlineLoading3Quarters } from "react-icons/ai";
 
 const AddClinic = () => {
-  const { backendUrl, aToken } = useContext(AdminContext);
+  const navigate = useNavigate();
+  const { id } = useParams();
+  const isEdit = !!id;
+  const { backendUrl, aToken, clinics, getAllClinics } = useContext(AdminContext);
+  const [submitLoading, setSubmitLoading] = useState(false);
 
   const [clinicImg, setClinicImg] = useState(false);
   const [name, setName] = useState("");
@@ -13,8 +19,51 @@ const AddClinic = () => {
   const [pincode, setPincode] = useState("");
   const [offer, setOffer] = useState("");
 
+  useEffect(() => {
+    if (!isEdit) return;
+
+    const loadClinic = async () => {
+      const existingClinic = clinics.find((clinic) => clinic._id === id);
+
+      if (existingClinic) {
+        setName(existingClinic.name || "");
+        setAddress(existingClinic.address || "");
+        setCity(existingClinic.city || "");
+        setPincode(existingClinic.pincode || "");
+        setOffer(existingClinic.offer || "");
+        setClinicImg(existingClinic.image || false);
+        return;
+      }
+
+      try {
+        const { data } = await axios.get(backendUrl + "/api/clinic/" + id, {
+          headers: { aToken },
+        });
+
+        if (data.success && data.clinic) {
+          const clinic = data.clinic;
+          setName(clinic.name || "");
+          setAddress(clinic.address || "");
+          setCity(clinic.city || "");
+          setPincode(clinic.pincode || "");
+          setOffer(clinic.offer || "");
+          setClinicImg(clinic.image || false);
+        } else {
+          toast.error(data.message || "Clinic not found");
+          navigate("/clinic-list");
+        }
+      } catch (error) {
+        toast.error(error.message);
+        navigate("/clinic-list");
+      }
+    };
+
+    loadClinic();
+  }, [id, isEdit, clinics, aToken, backendUrl, navigate]);
+
   const onSubmitHandler = async (e) => {
     e.preventDefault();
+    setSubmitLoading(true);
 
     try {
       const formData = new FormData();
@@ -24,34 +73,46 @@ const AddClinic = () => {
       formData.append("address", address);
       formData.append("city", city);
       formData.append("pincode", pincode);
-      formData.append("image", clinicImg);
+      if (clinicImg instanceof File) {
+        formData.append("image", clinicImg);
+      }
 
-      const { data } = await axios.post(
-        backendUrl + "/api/clinic/add",
-        formData,
-        { headers: { aToken } },
-      );
+      const url = isEdit
+        ? backendUrl + "/api/clinic/update/" + id
+        : backendUrl + "/api/clinic/add";
+
+      const { data } = await axios.post(url, formData, {
+        headers: { aToken },
+      });
 
       if (data.success) {
         toast.success(data.message);
 
-        setName("");
-        setAddress("");
-        setCity("");
-        setPincode("");
-        setOffer("");
-        setClinicImg(false);
+        if (isEdit) {
+          navigate("/clinic-list");
+        } else {
+          setName("");
+          setAddress("");
+          setCity("");
+          setPincode("");
+          setOffer("");
+          setClinicImg(false);
+        }
       } else {
         toast.error(data.message);
       }
     } catch (error) {
       toast.error(error.message);
+    } finally {
+      setSubmitLoading(false);
     }
   };
 
   return (
     <form onSubmit={onSubmitHandler} className="m-5">
-      <p className="mb-3 text-lg font-medium">Add Clinic</p>
+      <p className="mb-3 text-lg font-medium">
+        {isEdit ? "Edit Clinic" : "Add Clinic"}
+      </p>
 
       {/* Clinic Image Upload */}
       <div className="flex items-center gap-4 mb-6">
@@ -60,7 +121,9 @@ const AddClinic = () => {
             className="w-16 h-16 bg-gray-100 rounded-full cursor-pointer object-cover"
             src={
               clinicImg
-                ? URL.createObjectURL(clinicImg)
+                ? clinicImg instanceof File
+                  ? URL.createObjectURL(clinicImg)
+                  : clinicImg
                 : "https://cdn-icons-png.flaticon.com/512/2965/2965567.png"
             }
             alt=""
@@ -145,8 +208,21 @@ const AddClinic = () => {
         />
       </div>
 
-      <button type="submit" className="bg-primary px-6 py-2 text-white rounded">
-        Add Clinic
+      <button
+        type="submit"
+        disabled={submitLoading}
+        className={`bg-primary px-6 py-2 text-white rounded ${submitLoading ? "opacity-70 cursor-not-allowed" : "hover:bg-blue-600"}`}
+      >
+        {submitLoading ? (
+          <span className="flex items-center justify-center gap-2">
+            <AiOutlineLoading3Quarters className="animate-spin text-white text-xl" />
+            {isEdit ? "Updating..." : "Adding..."}
+          </span>
+        ) : isEdit ? (
+          "Update Clinic"
+        ) : (
+          "Add Clinic"
+        )}
       </button>
     </form>
   );

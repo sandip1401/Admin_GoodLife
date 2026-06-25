@@ -6,7 +6,9 @@ import { AppContext } from "../../context/AppContext";
 import { ImCancelCircle } from "react-icons/im";
 import { FaCheckCircle } from "react-icons/fa";
 import { FiFilter } from "react-icons/fi";
+import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Appoinments = () => {
   const [showDateFilter, setShowDateFilter] = useState(false);
@@ -21,7 +23,9 @@ const Appoinments = () => {
     cancelAppointment,
     completeAppointment,
   } = useContext(AdminContext);
+  const [loading, setLoading] = useState(false);
   const { calculateAge, currency } = useContext(AppContext);
+  const navigate = useNavigate();
 
   const filteredAppointments = appointments.filter((item) => {
     const matchDate = selectedDate ? item.slotDate === selectedDate : true;
@@ -34,6 +38,7 @@ const Appoinments = () => {
 
   const doctorList = [...new Set(appointments.map((a) => a.docData.name))];
   const dateList = [...new Set(appointments.map((a) => a.slotDate))];
+
   const formatSlotDate = (slotDate) => {
     if (!slotDate) {
       return "";
@@ -50,9 +55,24 @@ const Appoinments = () => {
 
   useEffect(() => {
     if (aToken) {
-      getAllAppointments();
+      const fetchAppointments = async () => {
+        setLoading(true);
+        await getAllAppointments();
+        setLoading(false);
+      };
+      fetchAppointments();
     }
   }, [aToken]);
+
+  if (loading) {
+    return (
+      <div className="w-full m-5 flex flex-col items-center justify-center min-h-[70vh]">
+        <AiOutlineLoading3Quarters className="text-5xl animate-spin text-blue-600" />
+        <p className="mt-4 text-blue-600 text-lg">Loading appointments...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full m-5">
       <p className="mb-3 text-lg font-medium">All Appointments</p>
@@ -129,58 +149,100 @@ const Appoinments = () => {
 
         {filteredAppointments.map((item, index) => {
           return (
-            <div
-              key={item._id}
-              className="hidden sm:grid sm:grid-cols-[0.5fr_2fr_1.3fr_2fr_2fr_0.8fr_0.8fr] items-center py-4 px-6 border-b hover:bg-gray-100 text-gray-600"
-            >
-              <p className="max-sm:hidden">{index + 1}</p>
-              <div className="flex items-center gap-2">
-                <img
-                  className="w-8 rounded-full"
-                  src={item.userData.image}
-                  alt=""
-                />{" "}
-                <p>{item.userData.name}</p>
-              </div>
-              <p className="whitespace-nowrap">
-                {item.userData?.phone || "N/A"}
-              </p>{" "}
-              <p className="">
-                {formatSlotDate(item.slotDate)} | {item.slotTime}
-              </p>
-              <div className="flex items-center gap-2">
-                <img
-                  className="w-8 rounded-full bg-gray-200"
-                  src={item.docData.image}
-                  alt=""
-                />{" "}
-                <p>{item.docData.name}</p>
-              </div>
-              <p>
-                {currency}
-                {item.amount}
-              </p>
-              {item.isCompleted ? (
-                <p className="text-green-600 border border-green-600 px-3 py-1 rounded text-center">
-                  Completed
-                </p>
-              ) : item.cancelled ? (
-                <p className="text-red-500 border border-red-500 px-3 py-1 rounded text-center">
-                  Cancelled
-                </p>
-              ) : (
-                <div className="flex justify-center gap-4">
-                  <ImCancelCircle
-                    onClick={() => cancelAppointment(item._id)}
-                    className="text-2xl text-red-500 cursor-pointer"
-                  />
-
-                  <FaCheckCircle
-                    onClick={() => completeAppointment(item._id)}
-                    className="text-2xl text-green-600 cursor-pointer"
-                  />
+            <div key={item._id}>
+              <div className="sm:hidden border-b bg-white">
+                <div className="flex items-center justify-between gap-4 px-4 py-4">
+                  <div
+                    onClick={() => navigate(`/all-appointments/${item._id}`)}
+                    className="flex-1"
+                  >
+                    <p className="font-medium text-sm">{item.userData.name}</p>
+                    <p className="text-xs text-gray-500">{item.docData.name}</p>
+                  </div>
+                  {item.isCompleted ? (
+                    <span className="inline-flex items-center rounded-full border border-green-600 bg-green-100 px-3 py-1 text-green-700">
+                      <FaCheckCircle className="text-base" />
+                      <span className="ml-1 text-xs">Completed</span>
+                    </span>
+                  ) : item.cancelled ? (
+                    <span className="inline-flex items-center rounded-full border border-red-500 bg-red-100 px-3 py-1 text-red-700">
+                      <ImCancelCircle className="text-base" />
+                      <span className="ml-1 text-xs">Cancelled</span>
+                    </span>
+                  ) : (
+                    <div
+                      className="flex items-center gap-4"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <ImCancelCircle
+                        onClick={() => cancelAppointment(item._id)}
+                        className="text-2xl text-red-500 cursor-pointer"
+                      />
+                      <FaCheckCircle
+                        onClick={() => completeAppointment(item._id)}
+                        className="text-2xl text-green-600 cursor-pointer"
+                      />
+                    </div>
+                  )}
                 </div>
-              )}
+              </div>
+
+              <div
+                className="hidden sm:grid sm:grid-cols-[0.5fr_2fr_1.3fr_2fr_2fr_0.8fr_0.8fr] items-center py-4 px-6 border-b hover:bg-gray-100 text-gray-600 cursor-pointer"
+                onClick={() => navigate(`/all-appointments/${item._id}`)}
+              >
+                <p className="max-sm:hidden">{index + 1}</p>
+                <div className="flex items-center gap-2">
+                  <img
+                    className="w-8 rounded-full"
+                    src={item.userData.image}
+                    alt=""
+                  />{" "}
+                  <p>{item.userData.name}</p>
+                </div>
+                <p className="whitespace-nowrap">
+                  {item.userData?.phone || "N/A"}
+                </p>{" "}
+                <p className="">
+                  {formatSlotDate(item.slotDate)} | {item.slotTime}
+                </p>
+                <div className="flex items-center gap-2">
+                  <img
+                    className="w-8 rounded-full bg-gray-200"
+                    src={item.docData.image}
+                    alt=""
+                  />{" "}
+                  <p>{item.docData.name}</p>
+                </div>
+                <p>
+                  {currency}
+                  {item.amount}
+                </p>
+                {item.isCompleted ? (
+                  <p className="text-green-600 border border-green-600 px-3 py-1 rounded text-center">
+                    Completed
+                  </p>
+                ) : item.cancelled ? (
+                  <p className="text-red-500 border border-red-500 px-3 py-1 rounded text-center">
+                    Cancelled
+                  </p>
+                ) : (
+                  <div
+                    className="flex justify-center gap-4"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <ImCancelCircle
+                      onClick={() => cancelAppointment(item._id)}
+                      className="text-2xl text-red-500 cursor-pointer"
+                    />
+
+                    <FaCheckCircle
+                      onClick={() => completeAppointment(item._id)}
+                      className="text-2xl text-green-600 cursor-pointer"
+                    />
+                  </div>
+                )}
+              </div>
             </div>
           );
         })}

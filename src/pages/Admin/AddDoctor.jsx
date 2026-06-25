@@ -5,6 +5,7 @@ import { toast } from "react-toastify";
 import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
+import { AiOutlineLoading3Quarters } from "react-icons/ai";
 
 const AddDoctor = () => {
   const navigate = useNavigate();
@@ -26,6 +27,7 @@ const AddDoctor = () => {
   const [managerContacts, setManagerContacts] = useState([""]);
   const [adddress1, setAddress1] = useState("");
   const [adddress2, setAddress2] = useState("");
+  const [clinicId, setClinicId] = useState("");
   const [achievement, setaAchievement] = useState("");
   const [clinicImg, setClinicImg] = useState(false);
 
@@ -71,7 +73,11 @@ const AddDoctor = () => {
     showClinicList,
     setShowClinicList,
     doctors,
+    getAllDoctors,
+    getAllClinics,
+    getDoctorsByClinic,
   } = useContext(AdminContext);
+  const [submitLoading, setSubmitLoading] = useState(false);
 
   const getCurrentLocationLink = () => {
     if (!navigator.geolocation) {
@@ -88,10 +94,12 @@ const AddDoctor = () => {
 
   const onSubmitHandler = async (event) => {
     event.preventDefault();
+    setSubmitLoading(true);
 
     try {
       if (!docImg) {
-        return toast.error("Image not Selected");
+        toast.error("Image not Selected");
+        return;
       }
 
       // ✅ ADD THIS VALIDATION HERE
@@ -131,6 +139,7 @@ const AddDoctor = () => {
         const formData = new FormData();
 
         formData.append("doctorId", id);
+        formData.append("name", name);
         formData.append("email", email);
         formData.append("city", city);
         formData.append("fees", fees);
@@ -138,10 +147,10 @@ const AddDoctor = () => {
         formData.append("about", about);
         formData.append("achievement", achievement);
         formData.append("address1", adddress1);
-        formData.append("managerContacts", JSON.stringify(managerContacts));
-
-        if (docImg instanceof File) {
-          formData.append("image", docImg);
+        formData.append("address2", adddress2);
+        formData.append("clinicId", clinicId);
+        if (password) {
+          formData.append("password", password);
         }
 
         const { data } = await axios.post(
@@ -152,6 +161,25 @@ const AddDoctor = () => {
 
         if (data.success) {
           toast.success("Doctor Updated Successfully");
+          // refresh admin lists so clinic reassignment reflects immediately
+          try {
+            getAllDoctors && getAllDoctors();
+            getAllClinics && getAllClinics();
+            const prev = data.previousClinicId || null;
+            const newClinic = data.doctor?.clinicId
+              ? String(data.doctor.clinicId)
+              : clinicId || null;
+
+            if (prev && prev !== newClinic) {
+              getDoctorsByClinic && getDoctorsByClinic(prev);
+            }
+
+            if (newClinic) {
+              getDoctorsByClinic && getDoctorsByClinic(newClinic);
+            }
+          } catch (e) {
+            // ignore
+          }
           navigate("/admin/doctor-list");
         } else {
           toast.error(data.message);
@@ -173,10 +201,11 @@ const AddDoctor = () => {
         }
       }
     } catch (err) {
-      toast.error("Something went wrong");
-    }
-  };
-
+        toast.error("Something went wrong");
+      } finally {
+        setSubmitLoading(false);
+      }
+    };
   useEffect(() => {
     if (isEdit && doctors.length > 0) {
       const doctor = doctors.find((doc) => doc._id === id);
@@ -194,6 +223,7 @@ const AddDoctor = () => {
         setCity(doctor.city || "");
         setAddress1(doctor.address1 || "");
         setAddress2(doctor.address2 || "");
+        setClinicId(doctor.clinicId || "");
         setEducation(doctor.education || "");
         setManagerContacts(normalizeManagerContacts(doctor.managerContacts));
         setaAchievement(doctor.achievement || "");
@@ -273,7 +303,7 @@ const AddDoctor = () => {
               onChange={(e) => setPassword(e.target.value)}
               className="w-full border p-2 rounded mt-1"
               type="password"
-              required
+              required={!isEdit}
             />
           </div>
 
@@ -418,6 +448,7 @@ const AddDoctor = () => {
               value={adddress1}
               onChange={(e) => {
                 setAddress1(e.target.value);
+                setClinicId("");
                 searchClinic(e.target.value);
               }}
               className="w-full border p-2 rounded mt-1"
@@ -431,6 +462,7 @@ const AddDoctor = () => {
                     key={clinic._id}
                     onClick={() => {
                       setAddress1(clinic.name);
+                      setClinicId(clinic._id);
                       setShowClinicList(false);
                     }}
                     className="p-2 cursor-pointer hover:bg-gray-100"
@@ -698,9 +730,19 @@ const AddDoctor = () => {
 
         <button
           type="submit"
-          className="bg-primary px-5 py-2 rounded-full text-white mt-5"
+          disabled={submitLoading}
+          className={`bg-primary px-5 py-2 rounded-full text-white mt-5 ${submitLoading ? "opacity-70 cursor-not-allowed" : "hover:bg-blue-600"}`}
         >
-          {isEdit ? "Update Doctor" : "Add Doctor"}
+          {submitLoading ? (
+            <span className="flex items-center justify-center gap-2">
+              <AiOutlineLoading3Quarters className="animate-spin text-white text-xl" />
+              {isEdit ? "Updating..." : "Adding..."}
+            </span>
+          ) : isEdit ? (
+            "Update Doctor"
+          ) : (
+            "Add Doctor"
+          )}
         </button>
       </div>
     </form>

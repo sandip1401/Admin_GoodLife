@@ -4,7 +4,7 @@ import { AdminContext } from "../../context/AdminContext";
 
 const ClinicDoctors = () => {
   const { id } = useParams();
-  const { doctors, getDoctorsByClinic } = useContext(AdminContext);
+  const { doctors, getDoctorsByClinic, clinics } = useContext(AdminContext);
 
   const navigate = useNavigate();
 
@@ -14,9 +14,21 @@ useEffect(() => {
   }
 }, [id]);
 
+  const clinic = clinics.find((clinic) => clinic._id === id);
+
   return (
     <div className="m-5 w-full">
-      <p className="mb-4 text-lg font-medium">Doctors of this Clinic</p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+        <p className="text-lg font-medium">
+          Doctors of {clinic?.name || "this Clinic"}
+        </p>
+        <button
+          onClick={() => navigate(`/admin/update-clinic/${id}`)}
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+        >
+          Edit Clinic
+        </button>
+      </div>
 
       <div className="bg-white border rounded">
 

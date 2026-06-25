@@ -1,18 +1,35 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { AdminContext } from "../../context/AdminContext";
 import { useNavigate } from "react-router-dom";
+import { AiOutlineLoading3Quarters } from "react-icons/ai";
 
 const DoctorList = () => {
   const { doctors, aToken, getAllDoctors, changeAvailability } =
     useContext(AdminContext);
+  const [doctorsLoading, setDoctorsLoading] = useState(false);
 
   const navigate = useNavigate();
 
   useEffect(() => {
     if (aToken) {
-      getAllDoctors();
+      const fetchDoctors = async () => {
+        setDoctorsLoading(true);
+        await getAllDoctors();
+        setDoctorsLoading(false);
+      };
+      fetchDoctors();
     }
   }, [aToken]);
+
+  if (doctorsLoading && doctors.length === 0) {
+    return (
+      <div className="m-5 flex flex-col items-center justify-center min-h-[70vh]">
+        <AiOutlineLoading3Quarters className="text-5xl animate-spin text-blue-600" />
+        <p className="mt-4 text-blue-600 text-lg">Loading doctors...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="m-5">
       <h1 className="text-lg font-medium">All Doctors</h1>
@@ -48,6 +65,9 @@ const DoctorList = () => {
           );
         })}
       </div>
+      {doctors.length === 0 && !doctorsLoading && (
+        <p className="mt-6 text-gray-500">No doctors found.</p>
+      )}
     </div>
   );
 };
